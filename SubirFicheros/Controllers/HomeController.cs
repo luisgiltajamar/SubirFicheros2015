@@ -11,13 +11,14 @@ namespace SubirFicheros.Controllers
 {
     public class HomeController : Controller
     {
-        List<TipoFichero> tipos=new List<TipoFichero>()
+        List<TipoFichero> tipos = new List<TipoFichero>()
         {
-            new TipoFichero() {id=1,nombre = "Imagen"},
-            new TipoFichero() {id=2,nombre = "Cualquier otra cosa"},
+            new TipoFichero() {id = 1, nombre = "Imagen"},
+            new TipoFichero() {id = 2, nombre = "Cualquier otra cosa"},
 
         };
-            ficherosEntities db=new ficherosEntities();
+
+        ficherosEntities db = new ficherosEntities();
         // GET: Home
         public ActionResult Index()
         {
@@ -32,8 +33,10 @@ namespace SubirFicheros.Controllers
                 tipoAlmacen = "interno";
             if (almacen == 2)
                 tipoAlmacen = "base64";
+            if (almacen == 3)
+                tipoAlmacen = "binario";
 
-            ViewBag.almacen=tipoAlmacen;
+            ViewBag.almacen = tipoAlmacen;
 
             ViewBag.tipoFichero = new SelectList(tipos, "id", "nombre");
 
@@ -54,12 +57,12 @@ namespace SubirFicheros.Controllers
                 fichero = f.datosb;
             }
 
-           
+
             return File(fichero, MediaTypeNames.Application.Octet, f.nombre);
         }
 
         [HttpPost]
-        public ActionResult Subida(Ficheros model, 
+        public ActionResult Subida(Ficheros model,
             HttpPostedFileBase fichero)
         {
             if (model.tipo == "interno")
@@ -68,6 +71,7 @@ namespace SubirFicheros.Controllers
                 if (n != null)
                 {
                     model.datos = n;
+                    model.datosb=new byte[] {1};
                     db.Ficheros.Add(model);
                     try
                     {
@@ -85,6 +89,26 @@ namespace SubirFicheros.Controllers
                 if (data != null)
                 {
                     model.datos = Convert.ToBase64String(data);
+                    model.datosb = new byte[] { 1 };
+                    model.nombre = fichero.FileName;
+                    db.Ficheros.Add(model);
+                    try
+                    {
+                        db.SaveChanges();
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e);
+                    }
+                }
+            }
+            else if (model.tipo == "binario")
+            {
+                var datab = GestionarFicheros.ToBinario(fichero);
+                if (datab != null)
+                {
+                    model.datos = "";
+                    model.datosb = datab;
                     model.nombre = fichero.FileName;
                     db.Ficheros.Add(model);
                     try
@@ -98,10 +122,11 @@ namespace SubirFicheros.Controllers
                 }
 
             }
-            return RedirectToAction("Index");
-        }
+
         
+            return RedirectToAction("Index");
 
 
+        }
     }
 }
