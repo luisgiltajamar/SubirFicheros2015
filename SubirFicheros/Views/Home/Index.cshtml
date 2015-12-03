@@ -7,6 +7,8 @@
 @Html.ActionLink("Nuevo interno","Subida",new {almacen=1})
 @Html.ActionLink("Nuevo base64", "Subida", new { almacen = 2 })
 @Html.ActionLink("Nuevo binario", "Subida", new { almacen = 3 })
+@Html.ActionLink("Nuevo azure", "Subida", new { almacen = 4 })
+
 
 @foreach (var item in Model)
 {
@@ -55,5 +57,20 @@
 
         }
     }
+    else if (item.tipo == "azure")
+    {
+        if (item.tipoFichero == 1)
+        {
+            @Html.Action("GetBase64Azure",new {nombre=item.datos})
+        }
+        else
+        {
+            @Html.ActionLink(@item.nombre, "DownloadFile", new
+       {
+           id = @item.id,
+           tipo = 2
+       }, new { target = "_blank" });
 
+        }
+    }
 }
